@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ruff_cache/
+
+# Env / secrets
+.env
+!.env.example
+
+# Build output
+dist/
+build/
+
+# Editor/tooling
+.playwright-mcp/
+
+# Ad-hoc QA/debug screenshots taken during development (not project deliverables)
+/*.png

@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+app/chat.db
+app/chat.db-journal

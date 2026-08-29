@@ -1,0 +1,1422 @@
+/* ============================================================
+   App shell - persistent left rail + main content area
+   ============================================================ */
+
+.app-shell {
+  display: flex;
+  height: 100vh;
+  background: var(--bg);
+}
+
+.rail {
+  width: 240px;
+  flex-shrink: 0;
+  height: 100%;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 0.75rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.rail-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.rail-brand-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.rail-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.rail-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.6rem;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.87rem;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.rail-nav-item:hover {
+  color: var(--text);
+}
+
+.rail-nav-item.active {
+  background: var(--surface-raised);
+  color: var(--accent);
+}
+
+.rail-nav-dot--hidden {
+  visibility: hidden;
+}
+
+.rail-nav-icon {
+  flex-shrink: 0;
+  color: currentColor;
+}
+
+.rail-nav-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  padding: 1.75rem 2rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   Chat (Module 1)
+   ============================================================ */
+
+.chat-layout {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  gap: 1rem;
+}
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.75rem;
+  overflow: hidden;
+}
+
+.new-chat-button {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.new-chat-button:hover {
+  border-color: var(--accent);
+}
+
+.sidebar-sessions {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sidebar-empty {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+}
+
+.sidebar-session {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.5rem 0.6rem;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: var(--font-body);
+}
+
+.sidebar-session:hover {
+  background: var(--surface-raised);
+}
+
+.sidebar-session.active {
+  background: var(--accent-tint);
+}
+
+.sidebar-session-title {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.sidebar-session-time {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message-list-empty {
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.message {
+  max-width: 80%;
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+
+.message-user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: #fff;
+}
+
+.message-assistant {
+  align-self: flex-start;
+  background: var(--surface-raised);
+  max-width: 92%;
+}
+
+.message-role {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.65;
+  margin-bottom: 0.2rem;
+}
+
+.message-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Assistant messages render through react-markdown; reset pre-wrap since
+   block children (p, ul, pre, ...) handle their own spacing. */
+.markdown {
+  white-space: normal;
+}
+
+.markdown > *:first-child {
+  margin-top: 0;
+}
+
+.markdown > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown p {
+  margin: 0.5em 0;
+  white-space: pre-wrap;
+}
+
+.markdown ul,
+.markdown ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.markdown li {
+  margin: 0.2em 0;
+}
+
+.markdown li > p {
+  margin: 0;
+}
+
+.markdown a {
+  color: var(--accent-warm);
+}
+
+.markdown blockquote {
+  margin: 0.5em 0;
+  padding-left: 0.75em;
+  border-left: 3px solid var(--border);
+  color: var(--text-muted);
+}
+
+.markdown table {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  font-size: 0.9em;
+}
+
+.markdown th,
+.markdown td {
+  border: 1px solid var(--border);
+  padding: 0.3em 0.6em;
+}
+
+/* Inline code (no fence/language) */
+.markdown code {
+  background: var(--bg);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-size: 0.85em;
+  font-family: var(--font-mono);
+}
+
+/* Fenced code blocks are rendered by react-syntax-highlighter (a <pre>
+   wrapping its own <code>) - don't double up the inline-code styling. */
+.markdown pre {
+  margin: 0.5em 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.markdown pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85em;
+}
+
+/* The streaming cursor is a beacon - the "live" state gets the same
+   square+glow treatment as everything else, in the warm/amber color the
+   rest of the app uses for in-progress states (mic listening, TTS
+   speaking). Not a blinking text caret - a small glowing marker. */
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-left: 4px;
+  vertical-align: middle;
+  background: var(--accent-warm);
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--accent-warm) 55%, transparent);
+  animation: beacon-pulse 1s ease-in-out infinite;
+}
+
+.chat-input {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+.chat-input input:focus-visible {
+  border-color: var(--accent);
+}
+
+.chat-input button {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.chat-input button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.chat-input button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   Resume Generator (Module 2)
+   ============================================================ */
+
+.resume-form,
+.resume-page {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+.resume-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 1.1rem 1.35rem;
+}
+
+.resume-section h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.resume-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.resume-section-header h2 {
+  margin: 0;
+}
+
+.resume-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.resume-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.resume-full-width {
+  margin-top: 0.75rem;
+}
+
+.resume-form input,
+.resume-form textarea,
+.resume-form select {
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  resize: vertical;
+}
+
+.resume-form input:focus-visible,
+.resume-form textarea:focus-visible,
+.resume-form select:focus-visible {
+  border-color: var(--accent);
+}
+
+.resume-repeatable {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.resume-repeatable:last-child {
+  margin-bottom: 0;
+}
+
+.resume-repeatable-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.add-button,
+.remove-button {
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.add-button:hover,
+.remove-button:hover {
+  border-color: var(--accent);
+}
+
+.add-button:disabled,
+.remove-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.skill-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: var(--accent-tint);
+  color: var(--accent);
+  font-size: 0.8rem;
+}
+
+.skill-tag button {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.skill-input {
+  flex: 1;
+  min-width: 140px;
+  border: none !important;
+  background: none !important;
+  padding: 0.25rem !important;
+}
+
+.resume-submit-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.resume-submit-row button {
+  padding: 0.65rem 1.4rem;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.resume-submit-row button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.resume-submit-row button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.resume-status {
+  font-size: 0.85rem;
+}
+
+.resume-status-success {
+  color: var(--success);
+}
+
+.resume-status-error {
+  color: var(--danger);
+}
+
+.roadmap-imported-skills {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   Resume Preview + PDF export (Module 2)
+   ============================================================ */
+
+.resume-preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.resume-download-button {
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.resume-download-button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.resume-download-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* The preview is a literal document - it always renders black-on-white,
+   deliberately ignoring the app's dark theme, so it looks the same in the
+   browser as it does exported to PDF (an indigo-and-ink dashboard theme
+   has no place on a printable resume). Everything below this comment is
+   intentionally untouched by the redesign. */
+.resume-preview {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 2.5rem 3rem;
+  background: #fff;
+  color: #1a1a1a;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  line-height: 1.5;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.resume-preview-header {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.resume-preview-header h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #1a1a1a;
+}
+
+.resume-preview-contact {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.resume-preview-summary {
+  margin: 0.75rem 0 1.25rem;
+  padding: 0.15rem 0.3rem;
+  font-style: italic;
+  color: #333;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.resume-preview-summary:empty::before {
+  content: attr(data-placeholder);
+  color: #999;
+}
+
+.resume-preview-section {
+  margin-bottom: 1.1rem;
+}
+
+.resume-preview-section h2 {
+  margin: 0 0 0.4rem;
+  padding-bottom: 0.15rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #1a1a1a;
+  border-bottom: 1px solid #999;
+}
+
+.resume-preview-skills {
+  margin: 0;
+}
+
+.resume-preview-entry {
+  margin-bottom: 0.75rem;
+}
+
+.resume-preview-entry:last-child {
+  margin-bottom: 0;
+}
+
+.resume-preview-entry-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.92rem;
+}
+
+.resume-preview-entry-title {
+  font-weight: 700;
+}
+
+.resume-preview-entry-meta {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  color: #444;
+  font-style: italic;
+}
+
+.resume-preview-bullets {
+  margin: 0.3rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.resume-preview-bullets li {
+  margin: 0.15rem 0;
+  border-radius: 3px;
+}
+
+.resume-preview-description {
+  margin: 0.3rem 0 0;
+  border-radius: 3px;
+}
+
+/* contentEditable fields: a subtle dashed outline on hover/focus is the
+   only hint that these are editable - otherwise the preview should read
+   like a plain document, not a form. */
+.resume-preview-bullets li,
+.resume-preview-description,
+.resume-preview-summary {
+  outline: none;
+  cursor: text;
+}
+
+.resume-preview-bullets li:hover,
+.resume-preview-description:hover,
+.resume-preview-summary:hover {
+  box-shadow: 0 0 0 1px #ccc;
+}
+
+.resume-preview-bullets li:focus,
+.resume-preview-description:focus,
+.resume-preview-summary:focus {
+  box-shadow: 0 0 0 1px #6e5bff;
+}
+
+@media print {
+  .resume-preview-toolbar {
+    display: none;
+  }
+
+  .resume-preview {
+    box-shadow: none;
+    padding: 0;
+  }
+}
+
+/* ============================================================
+   Roadmap Timeline (Module 3)
+   ============================================================ */
+
+.roadmap-toolbar {
+  display: flex;
+  margin-bottom: 1.5rem;
+}
+
+.roadmap-timeline-wrapper {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.roadmap-timeline-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.roadmap-timeline-header h1 {
+  margin: 0;
+  font-size: 1.7rem;
+}
+
+.roadmap-timeline-duration {
+  margin: 0.3rem 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.roadmap-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.roadmap-phase {
+  position: relative;
+  padding-left: 2rem;
+  padding-bottom: 2rem;
+}
+
+.roadmap-phase:last-child {
+  padding-bottom: 0;
+}
+
+/* The connecting line is drawn per-phase, from this phase's marker down
+   through its own padding-bottom gap to the next phase's marker. Since each
+   segment is sized to its own <li>, the line stays continuous and correctly
+   aligned regardless of how tall any individual phase card is - a roadmap
+   with 3 phases and one with 6 phases both work without extra math. */
+.roadmap-phase::before {
+  content: "";
+  position: absolute;
+  left: calc(0.25rem - 1px);
+  top: 0;
+  bottom: -2rem;
+  width: 2px;
+  background: var(--border);
+}
+
+.roadmap-phase:last-child::before {
+  content: none;
+}
+
+/* The timeline marker is a beacon - same 8px square + glow as everywhere
+   else a marker/indicator appears in the app. */
+.roadmap-phase-marker {
+  position: absolute;
+  left: 0;
+  top: 0.4rem;
+  z-index: 1;
+}
+
+.roadmap-phase-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 1.1rem 1.3rem;
+}
+
+.roadmap-phase-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.roadmap-phase-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.roadmap-phase-duration {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.roadmap-phase-focus {
+  margin: 0.5rem 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.roadmap-milestones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.roadmap-milestone {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.4rem 0;
+}
+
+.roadmap-milestone input[type="checkbox"] {
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.roadmap-milestone label {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.roadmap-milestone-done {
+  color: var(--text-muted);
+  opacity: 0.75;
+  text-decoration: line-through;
+}
+
+/* ============================================================
+   Technical Interview (Module 5)
+   ============================================================ */
+
+.interview-layout {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  gap: 1rem;
+}
+
+.interview-problem-list {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.75rem;
+  overflow-y: auto;
+}
+
+.interview-problem-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+}
+
+.interview-problem-item:hover {
+  border-color: var(--border);
+  background: var(--surface-raised);
+}
+
+.interview-problem-item.active {
+  border-color: var(--accent);
+  background: var(--accent-tint);
+}
+
+/* Difficulty is a beacon: a colored dot + a mono uppercase label, the
+   same recipe used for every other marker in the app. Easy/medium/hard
+   map cleanly onto the success/warm/danger token trio. */
+.interview-difficulty {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.interview-difficulty::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.interview-difficulty-easy::before {
+  background: var(--success);
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--success) 55%, transparent);
+}
+
+.interview-difficulty-medium::before {
+  background: var(--accent-warm);
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--accent-warm) 55%, transparent);
+}
+
+.interview-difficulty-hard::before {
+  background: var(--danger);
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--danger) 55%, transparent);
+}
+
+.interview-detail {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 1.25rem 1.5rem;
+}
+
+.interview-detail-empty {
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.interview-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.interview-detail-header h2 {
+  margin: 0;
+}
+
+.interview-detail-section {
+  margin-bottom: 1.25rem;
+}
+
+.interview-detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.interview-detail-section h3 {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.interview-constraints {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.interview-constraints li {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.interview-example {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.interview-example:last-child {
+  margin-bottom: 0;
+}
+
+.interview-example code {
+  font-family: var(--font-mono);
+  background: var(--bg);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+}
+
+.interview-example-explanation {
+  margin-top: 0.4rem;
+  color: var(--text-muted);
+}
+
+.interview-editor-section {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.interview-editor-section h3 {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.interview-editor-wrapper {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.interview-results {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.interview-test-result {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.interview-test-result.pass {
+  border-left-color: var(--success);
+}
+
+.interview-test-result.fail {
+  border-left-color: var(--danger);
+}
+
+.interview-test-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.interview-test-result-header span:first-child {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.interview-test-result.pass .interview-test-result-header span:last-child {
+  color: var(--success);
+}
+
+.interview-test-result.fail .interview-test-result-header span:last-child {
+  color: var(--danger);
+}
+
+.interview-test-result-row {
+  margin: 0.15rem 0;
+  color: var(--text);
+}
+
+.interview-test-result-row code {
+  font-family: var(--font-mono);
+  background: var(--bg);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+}
+
+.interview-test-result-stderr {
+  margin-top: 0.35rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(255, 92, 92, 0.1);
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+}
+
+/* The verdict banner is a beacon too: a colored dot + a mono uppercase
+   verdict code, on a neutral surface rather than a fully tinted card -
+   the dot carries the color, not the whole banner. */
+.interview-verdict {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.interview-verdict-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.interview-verdict-label::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.interview-verdict-count {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.interview-verdict-accepted {
+  border-color: color-mix(in srgb, var(--success) 40%, var(--border));
+}
+
+.interview-verdict-accepted .interview-verdict-label::before {
+  background: var(--success);
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--success) 55%, transparent);
+}
+
+.interview-verdict-wrong-answer {
+  border-color: color-mix(in srgb, var(--danger) 40%, var(--border));
+}
+
+.interview-verdict-wrong-answer .interview-verdict-label::before {
+  background: var(--danger);
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--danger) 55%, transparent);
+}
+
+.interview-verdict-runtime-error {
+  border-color: color-mix(in srgb, var(--accent-warm) 40%, var(--border));
+}
+
+.interview-verdict-runtime-error .interview-verdict-label::before {
+  background: var(--accent-warm);
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--accent-warm) 55%, transparent);
+}
+
+/* ============================================================
+   Mock Interview (Module 4)
+   ============================================================ */
+
+.mock-interview-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 1rem;
+}
+
+.mock-interview-start {
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.mock-interview-subtitle {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.mock-interview-type-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.mock-interview-cta {
+  padding: 0.75rem 1.75rem;
+  font-size: 1rem;
+}
+
+.mock-interview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mock-interview-type-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.mock-interview-summary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.mock-interview-summary h2 {
+  margin: 0;
+}
+
+.mock-interview-summary-type {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.mock-interview-summary-text {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.mock-interview-summary button {
+  align-self: flex-start;
+}
+
+.mock-interview-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* "Live" states - mic listening, TTS speaking - are always the warm/amber
+   beacon color, distinguishing an in-progress voice state from the
+   accent color used for regular active/selected UI. */
+.mock-interview-speaking {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-warm);
+}
+
+.mock-interview-speaking::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  background: var(--accent-warm);
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--accent-warm) 55%, transparent);
+  animation: beacon-pulse 1.4s ease-in-out infinite;
+}
+
+/* Scoped as .chat-input .mock-interview-mic-button (not just the bare
+   class) so it reliably outweighs the general ".chat-input button" rule -
+   this button lives inside a .chat-input form but is a secondary action,
+   not the primary send button. */
+.chat-input .mock-interview-mic-button {
+  flex-shrink: 0;
+  width: 2.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.chat-input .mock-interview-mic-button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--surface-raised);
+}
+
+.chat-input .mock-interview-mic-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chat-input .mock-interview-mic-button.listening {
+  background: color-mix(in srgb, var(--accent-warm) 18%, var(--surface-raised));
+  border-color: var(--accent-warm);
+  box-shadow: 0 0 12px 1px color-mix(in srgb, var(--accent-warm) 35%, transparent);
+  animation: beacon-pulse 1.2s ease-in-out infinite;
+}
+
+.mock-interview-voice-unsupported {
+  margin: 0.5rem 0 0;
+  padding: 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.mock-interview-interim {
+  margin: 0.5rem 0 0;
+  padding: 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
