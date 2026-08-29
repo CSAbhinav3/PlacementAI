@@ -44,3 +44,8 @@ and watch the response stream in.
 - Persist conversation history and send it back to `/chat` on each turn
 - Reconnect/retry handling for dropped SSE streams
 - Auth, rate limiting, and a real system prompt
+
+## Deploying
+
+See [`DEPLOY.md`](./DEPLOY.md) for hosting this on Render (backend) +
+Vercel (frontend).

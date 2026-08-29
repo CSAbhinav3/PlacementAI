@@ -9,12 +9,20 @@ single-user dev server but would become a bottleneck under real concurrent
 load - swap in `aiosqlite` or a thread pool if this ever needs to.
 """
 
+import os
 import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "chat.db"
+# Defaults to sitting next to the app code (fine for local dev), but is
+# overridable via DB_DIR so a deployment can point it at a persistent disk
+# instead - e.g. a Render disk mounted at /var/data. Deliberately a
+# separate directory from the app's own source rather than DB_PATH being
+# the mount point itself: a platform disk mount replaces whatever's at
+# that path in the container, so mounting one directly over `app/` would
+# shadow the application code.
+DB_PATH = Path(os.environ.get("DB_DIR", Path(__file__).parent)) / "chat.db"
 
 TITLE_MAX_LEN = 40
 
