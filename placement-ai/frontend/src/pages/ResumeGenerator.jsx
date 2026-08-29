@@ -384,8 +384,13 @@ export default function ResumeGenerator() {
       </section>
 
       <div className="resume-submit-row">
-        <button type="submit" disabled={status === "submitting"}>
-          {status === "submitting" ? "Polishing with AI..." : "Submit draft"}
+        <button
+          type="submit"
+          className={status === "submitting" ? "btn-loading" : undefined}
+          disabled={status === "submitting"}
+          aria-busy={status === "submitting"}
+        >
+          Submit draft
         </button>
         {status === "error" && <span className="resume-status resume-status-error">⚠️ {errorMessage}</span>}
       </div>

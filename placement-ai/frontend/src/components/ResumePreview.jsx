@@ -87,8 +87,14 @@ export default function ResumePreview({ resumeData, onEditForm }) {
         <button type="button" className="add-button" onClick={onEditForm}>
           ← Edit form
         </button>
-        <button type="button" className="resume-download-button" onClick={handleDownloadPdf} disabled={downloading}>
-          {downloading ? "Preparing PDF..." : "Download PDF"}
+        <button
+          type="button"
+          className={`resume-download-button${downloading ? " btn-loading" : ""}`}
+          onClick={handleDownloadPdf}
+          disabled={downloading}
+          aria-busy={downloading}
+        >
+          Download PDF
         </button>
       </div>
 

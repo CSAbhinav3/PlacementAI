@@ -1,6 +1,12 @@
 """Module 5 - Technical Interview problem bank.
 
-GET /problems lists {id, title, difficulty} only - no test cases at all.
+GET /problems lists {id, title, difficulty, topic, companies} - enough to
+render the problem list plus its topic/difficulty/company filters, but no
+test cases at all. Filtering itself happens client-side (the frontend
+already has the full list in hand, and there are only a few dozen problems
+- no need for a server round-trip per filter change), so this endpoint
+takes no query params and always returns everything.
+
 GET /problems/{id} returns full problem detail plus visible_test_cases.
 hidden_test_cases is deliberately not a field on either response model
 below, so it can never end up in a response regardless of what's passed in.
@@ -20,12 +26,16 @@ class ProblemSummary(BaseModel):
     id: str
     title: str
     difficulty: str
+    topic: str
+    companies: list[str]
 
 
 class ProblemDetail(BaseModel):
     id: str
     title: str
     difficulty: str
+    topic: str
+    companies: list[str]
     description: str
     constraints: list[str]
     examples: list[Example]
@@ -39,9 +49,15 @@ class ProblemDetail(BaseModel):
 
 @router.get("")
 async def list_problems() -> list[ProblemSummary]:
-    """Title/difficulty only - enough to render the problem list."""
+    """Everything needed to render the problem list and its filters."""
     return [
-        ProblemSummary(id=problem.id, title=problem.title, difficulty=problem.difficulty)
+        ProblemSummary(
+            id=problem.id,
+            title=problem.title,
+            difficulty=problem.difficulty,
+            topic=problem.topic,
+            companies=problem.companies,
+        )
         for problem in PROBLEMS
     ]
 
@@ -56,6 +72,8 @@ async def get_problem(problem_id: str) -> ProblemDetail:
         id=problem.id,
         title=problem.title,
         difficulty=problem.difficulty,
+        topic=problem.topic,
+        companies=problem.companies,
         description=problem.description,
         constraints=problem.constraints,
         examples=problem.examples,

@@ -133,8 +133,10 @@ export default function Chat() {
       />
       <div className="chat">
         {isRestoringHistory ? (
-          <div className="message-list">
-            <p className="message-list-empty">Loading conversation...</p>
+          <div className="message-list" aria-busy="true" aria-label="Loading conversation">
+            <div className="message-skeleton message-skeleton-user skeleton" />
+            <div className="message-skeleton message-skeleton-assistant skeleton" />
+            <div className="message-skeleton message-skeleton-user skeleton" />
           </div>
         ) : (
           <MessageList messages={messages} />

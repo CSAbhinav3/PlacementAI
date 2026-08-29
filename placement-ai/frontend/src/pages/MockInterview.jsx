@@ -227,19 +227,19 @@ export default function MockInterview() {
         <div className="mock-interview-type-buttons">
           <button
             type="button"
-            className="add-button mock-interview-cta"
+            className={`add-button mock-interview-cta${status === "starting" ? " btn-loading" : ""}`}
             onClick={() => handleStart("behavioral")}
             disabled={status === "starting"}
           >
-            {status === "starting" ? "Starting..." : "Behavioral"}
+            Behavioral
           </button>
           <button
             type="button"
-            className="add-button mock-interview-cta"
+            className={`add-button mock-interview-cta${status === "starting" ? " btn-loading" : ""}`}
             onClick={() => handleStart("technical")}
             disabled={status === "starting"}
           >
-            {status === "starting" ? "Starting..." : "Technical"}
+            Technical
           </button>
         </div>
         {errorMessage && <p className="resume-status resume-status-error">⚠️ {errorMessage}</p>}
@@ -273,8 +273,13 @@ export default function MockInterview() {
               {muted ? "🔇 Unmute" : "🔊 Mute"}
             </button>
           )}
-          <button type="button" className="add-button" onClick={handleEnd} disabled={status === "ending"}>
-            {status === "ending" ? "Ending..." : "End Interview"}
+          <button
+            type="button"
+            className={`add-button${status === "ending" ? " btn-loading" : ""}`}
+            onClick={handleEnd}
+            disabled={status === "ending"}
+          >
+            End Interview
           </button>
         </div>
       </div>
@@ -288,9 +293,13 @@ export default function MockInterview() {
             </div>
           ))}
           {status === "sending" && (
-            <div className="message message-assistant">
+            <div className="message message-assistant" aria-live="polite" aria-label="Interviewer is responding">
               <span className="message-role">Interviewer</span>
-              <p className="message-text">...</p>
+              <div className="typing-indicator">
+                <span className="beacon beacon--accent" aria-hidden="true" />
+                <span className="beacon beacon--accent" aria-hidden="true" />
+                <span className="beacon beacon--accent" aria-hidden="true" />
+              </div>
             </div>
           )}
         </div>

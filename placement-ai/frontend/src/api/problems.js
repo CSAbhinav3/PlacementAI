@@ -1,8 +1,10 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 /**
- * GET /problems - list of {id, title, difficulty} only; no test cases are
- * ever included in this response.
+ * GET /problems - list of {id, title, difficulty, topic, companies}; no
+ * test cases are ever included in this response. The full list is always
+ * returned - topic/difficulty/company filtering happens client-side in
+ * TechnicalInterview.jsx.
  */
 export async function listProblems() {
   const res = await fetch(`${API_BASE_URL}/problems`);

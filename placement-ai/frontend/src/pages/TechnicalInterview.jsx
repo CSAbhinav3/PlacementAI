@@ -1,15 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Editor from "@monaco-editor/react";
 import { runCode, submitCode } from "../api/execute";
 import { getProblem, listProblems } from "../api/problems";
+import { useTheme } from "../theme";
+
+const DIFFICULTY_ORDER = ["Easy", "Medium", "Hard"];
+const ALL = "all";
 
 function verdictClass(verdict) {
   return `interview-verdict-${verdict.toLowerCase().replace(/\s+/g, "-")}`;
 }
 
 export default function TechnicalInterview() {
+  const { theme } = useTheme();
   const [problems, setProblems] = useState([]);
   const [listError, setListError] = useState("");
+
+  // Filtering happens entirely client-side against the already-fetched
+  // list - see api/problems.js. "all" means the filter is inactive.
+  const [topicFilter, setTopicFilter] = useState(ALL);
+  const [difficultyFilter, setDifficultyFilter] = useState(ALL);
+  const [companyFilter, setCompanyFilter] = useState(ALL);
 
   const [selectedId, setSelectedId] = useState(null);
   const [detail, setDetail] = useState(null);
@@ -31,6 +42,30 @@ export default function TechnicalInterview() {
       .then(setProblems)
       .catch((err) => setListError(err.message));
   }, []);
+
+  const topics = useMemo(
+    () => [...new Set(problems.map((p) => p.topic))].sort((a, b) => a.localeCompare(b)),
+    [problems],
+  );
+  const companies = useMemo(
+    () => [...new Set(problems.flatMap((p) => p.companies))].sort((a, b) => a.localeCompare(b)),
+    [problems],
+  );
+  const difficulties = useMemo(
+    () => DIFFICULTY_ORDER.filter((d) => problems.some((p) => p.difficulty === d)),
+    [problems],
+  );
+
+  const filteredProblems = useMemo(
+    () =>
+      problems.filter(
+        (p) =>
+          (topicFilter === ALL || p.topic === topicFilter) &&
+          (difficultyFilter === ALL || p.difficulty === difficultyFilter) &&
+          (companyFilter === ALL || p.companies.includes(companyFilter)),
+      ),
+    [problems, topicFilter, difficultyFilter, companyFilter],
+  );
 
   async function selectProblem(id) {
     setSelectedId(id);
@@ -83,25 +118,77 @@ export default function TechnicalInterview() {
 
   return (
     <div className="interview-layout">
-      <aside className="interview-problem-list">
-        {listError && <p className="resume-status resume-status-error">⚠️ {listError}</p>}
-        {problems.map((problem) => (
-          <button
-            key={problem.id}
-            type="button"
-            className={`interview-problem-item${problem.id === selectedId ? " active" : ""}`}
-            onClick={() => selectProblem(problem.id)}
-          >
-            <span>{problem.title}</span>
-            <span className={`interview-difficulty interview-difficulty-${problem.difficulty.toLowerCase()}`}>
-              {problem.difficulty}
-            </span>
-          </button>
-        ))}
-      </aside>
+      <div className="interview-sidebar">
+        <div className="interview-filters">
+          <label>
+            Topic
+            <select value={topicFilter} onChange={(e) => setTopicFilter(e.target.value)}>
+              <option value={ALL}>All topics</option>
+              {topics.map((topic) => (
+                <option key={topic} value={topic}>
+                  {topic}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Difficulty
+            <select value={difficultyFilter} onChange={(e) => setDifficultyFilter(e.target.value)}>
+              <option value={ALL}>All difficulties</option>
+              {difficulties.map((difficulty) => (
+                <option key={difficulty} value={difficulty}>
+                  {difficulty}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Company
+            <select value={companyFilter} onChange={(e) => setCompanyFilter(e.target.value)}>
+              <option value={ALL}>All companies</option>
+              {companies.map((company) => (
+                <option key={company} value={company}>
+                  {company}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <aside className="interview-problem-list">
+          {listError && <p className="resume-status resume-status-error">⚠️ {listError}</p>}
+          {!listError && problems.length > 0 && filteredProblems.length === 0 && (
+            <p className="interview-filters-empty">No problems match these filters.</p>
+          )}
+          {filteredProblems.map((problem) => (
+            <button
+              key={problem.id}
+              type="button"
+              className={`interview-problem-item${problem.id === selectedId ? " active" : ""}`}
+              onClick={() => selectProblem(problem.id)}
+            >
+              <span className="interview-problem-item-row">
+                <span>{problem.title}</span>
+                <span className={`interview-difficulty interview-difficulty-${problem.difficulty.toLowerCase()}`}>
+                  {problem.difficulty}
+                </span>
+              </span>
+              <span className="interview-problem-topic">{problem.topic}</span>
+            </button>
+          ))}
+        </aside>
+      </div>
 
       <section className="interview-detail">
-        {detailStatus === "loading" && <p className="interview-detail-empty">Loading...</p>}
+        {detailStatus === "loading" && (
+          <div className="interview-detail-skeleton" aria-busy="true" aria-label="Loading problem">
+            <div className="skeleton" />
+            <div className="skeleton" />
+            <div className="skeleton" />
+            <div className="skeleton" />
+            <div className="skeleton" />
+          </div>
+        )}
         {detailStatus === "error" && <p className="resume-status resume-status-error">⚠️ {detailError}</p>}
         {detailStatus === "idle" && !detail && (
           <p className="interview-detail-empty">Select a problem from the list to see its details.</p>
@@ -113,6 +200,13 @@ export default function TechnicalInterview() {
               <span className={`interview-difficulty interview-difficulty-${detail.difficulty.toLowerCase()}`}>
                 {detail.difficulty}
               </span>
+            </div>
+
+            <div className="interview-detail-meta">
+              <span className="mono-label">{detail.topic}</span>
+              {detail.companies.length > 0 && (
+                <span className="interview-detail-companies">Asked at: {detail.companies.join(", ")}</span>
+              )}
             </div>
 
             <div className="interview-detail-section">
@@ -153,7 +247,7 @@ export default function TechnicalInterview() {
                 <Editor
                   height="320px"
                   language="python"
-                  theme="vs-dark"
+                  theme={theme === "dark" ? "vs-dark" : "light"}
                   value={code}
                   onChange={(value) => setCode(value ?? "")}
                   options={{
@@ -166,11 +260,23 @@ export default function TechnicalInterview() {
               </div>
 
               <div className="resume-submit-row">
-                <button type="button" onClick={handleRun} disabled={runStatus === "running"}>
-                  {runStatus === "running" ? "Running..." : "Run"}
+                <button
+                  type="button"
+                  className={runStatus === "running" ? "btn-loading" : undefined}
+                  onClick={handleRun}
+                  disabled={runStatus === "running"}
+                  aria-busy={runStatus === "running"}
+                >
+                  Run
                 </button>
-                <button type="button" onClick={handleSubmit} disabled={submitStatus === "submitting"}>
-                  {submitStatus === "submitting" ? "Submitting..." : "Submit"}
+                <button
+                  type="button"
+                  className={submitStatus === "submitting" ? "btn-loading" : undefined}
+                  onClick={handleSubmit}
+                  disabled={submitStatus === "submitting"}
+                  aria-busy={submitStatus === "submitting"}
+                >
+                  Submit
                 </button>
               </div>
 

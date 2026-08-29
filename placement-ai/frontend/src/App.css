@@ -8,6 +8,34 @@
   background: var(--bg);
 }
 
+/* ---- Micro-interactions ----
+   One shared rule for how every clickable surface responds to touch: a
+   quick color/border transition plus a subtle press-down scale. Low
+   specificity on purpose - existing per-component rules still win on
+   background/border color, this only adds the timing + the :active dip. */
+button,
+.rail-nav-item,
+.rail-footer-button,
+.sidebar-session,
+.interview-problem-item,
+.roadmap-milestone label {
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.08s ease;
+}
+
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.sidebar-session:active,
+.interview-problem-item:active {
+  transform: scale(0.99);
+}
+
 .rail {
   width: 240px;
   flex-shrink: 0;
@@ -18,7 +46,68 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
   overflow-y: auto;
+  transition: width 0.2s ease;
+}
+
+.rail.collapsed {
+  width: 64px;
+}
+
+.rail.collapsed .rail-brand-name,
+.rail.collapsed .rail-nav-label {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.rail.collapsed .rail-nav-item,
+.rail.collapsed .rail-footer-button {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.rail-footer {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.rail-footer-button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.6rem;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.rail-footer-button:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.rail-footer-button svg {
+  flex-shrink: 0;
+}
+
+.rail-collapse-button svg {
+  transition: transform 0.2s ease;
+}
+
+.rail-collapse-button svg.flipped {
+  transform: rotate(180deg);
 }
 
 .rail-brand {
@@ -35,6 +124,8 @@
   font-size: 1.1rem;
   letter-spacing: -0.01em;
   color: var(--text);
+  white-space: nowrap;
+  transition: opacity 0.15s ease, width 0.2s ease;
 }
 
 .rail-nav {
@@ -56,9 +147,6 @@
   font-size: 0.87rem;
   cursor: pointer;
   text-align: left;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
 }
 
 .rail-nav-item:hover {
@@ -83,6 +171,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: opacity 0.15s ease, width 0.2s ease;
 }
 
 .app-main {
@@ -95,6 +184,34 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+}
+
+/* Re-keyed on every nav switch (see App.jsx), so each module mounts fresh
+   and this animation replays - a lightweight sense of moving between
+   places instead of content just snapping into view. */
+.page-transition {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  animation: page-fade-in 0.22s ease both;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition {
+    animation: none;
+  }
 }
 
 /* ============================================================
@@ -214,6 +331,25 @@
   color: var(--text-muted);
   text-align: center;
   margin-top: 2rem;
+}
+
+/* Stand-in for the message list while a restored session's history is
+   still loading - same bubble shapes as real messages, so the layout
+   doesn't jump once they're replaced. */
+.message-skeleton {
+  max-width: 80%;
+  height: 2.75rem;
+  border-radius: var(--radius);
+}
+
+.message-skeleton-user {
+  align-self: flex-end;
+  width: 45%;
+}
+
+.message-skeleton-assistant {
+  align-self: flex-start;
+  width: 70%;
 }
 
 .message {
@@ -858,6 +994,18 @@
   border-radius: var(--radius);
   background: var(--surface);
   padding: 1.1rem 1.3rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+/* Reordering is local/visual only (see RoadmapTimeline.jsx) - the same
+   "never persisted" convention as the milestone checkboxes. */
+.roadmap-phase.dragging .roadmap-phase-card {
+  opacity: 0.5;
+}
+
+.roadmap-phase.drag-over .roadmap-phase-card {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .roadmap-phase-header {
@@ -866,6 +1014,25 @@
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
+}
+
+.roadmap-phase-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.3rem;
+  color: var(--text-muted);
+  cursor: grab;
+  border-radius: 4px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.roadmap-phase-drag-handle:hover {
+  color: var(--text);
+  background: var(--surface-raised);
+}
+
+.roadmap-phase-drag-handle:active {
+  cursor: grabbing;
 }
 
 .roadmap-phase-header h2 {
@@ -933,9 +1100,64 @@
   gap: 1rem;
 }
 
-.interview-problem-list {
+.interview-sidebar {
   width: 260px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+/* Filters live in their own fixed-height card above the scrollable problem
+   list, so they stay visible no matter how long the (filtered) list gets. */
+.interview-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.75rem;
+}
+
+.interview-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.interview-filters select {
+  padding: 0.45rem 0.55rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+}
+
+.interview-filters select:focus-visible {
+  border-color: var(--accent);
+}
+
+.interview-filters-empty {
+  margin: 0;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.interview-problem-list {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -948,9 +1170,8 @@
 
 .interview-problem-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.3rem;
   padding: 0.55rem 0.65rem;
   border: 1px solid transparent;
   border-radius: var(--radius);
@@ -960,6 +1181,22 @@
   text-align: left;
   font-size: 0.9rem;
   font-family: var(--font-body);
+}
+
+.interview-problem-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.interview-problem-topic {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
 }
 
 .interview-problem-item:hover {
@@ -1027,6 +1264,36 @@
   margin-top: 2rem;
 }
 
+.interview-detail-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.interview-detail-skeleton .skeleton {
+  height: 0.9rem;
+}
+
+.interview-detail-skeleton .skeleton:nth-child(1) {
+  width: 40%;
+  height: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.interview-detail-skeleton .skeleton:nth-child(3) {
+  width: 85%;
+}
+
+.interview-detail-skeleton .skeleton:nth-child(4) {
+  width: 65%;
+}
+
+.interview-detail-skeleton .skeleton:nth-child(5) {
+  width: 90%;
+  height: 8rem;
+  margin-top: 1rem;
+}
+
 .interview-detail-header {
   display: flex;
   align-items: center;
@@ -1037,6 +1304,19 @@
 
 .interview-detail-header h2 {
   margin: 0;
+}
+
+.interview-detail-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: -0.5rem 0 1rem;
+}
+
+.interview-detail-companies {
+  font-size: 0.82rem;
+  color: var(--text-muted);
 }
 
 .interview-detail-section {

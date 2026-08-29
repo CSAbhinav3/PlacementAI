@@ -119,8 +119,13 @@ export default function RoadmapGenerator() {
       </section>
 
       <div className="resume-submit-row">
-        <button type="submit" disabled={status === "submitting"}>
-          {status === "submitting" ? "Generating..." : "Generate roadmap"}
+        <button
+          type="submit"
+          className={status === "submitting" ? "btn-loading" : undefined}
+          disabled={status === "submitting"}
+          aria-busy={status === "submitting"}
+        >
+          Generate roadmap
         </button>
         {status === "error" && <span className="resume-status resume-status-error">⚠️ {errorMessage}</span>}
       </div>
