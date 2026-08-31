@@ -1,25 +1,28 @@
 # Deploying PlacementAI
 
-Two services, deployed separately: the **backend** (FastAPI, needs to stay
-running) on Render, and the **frontend** (a static Vite build) on Vercel.
-Both have generous free tiers and deploy straight from this GitHub repo.
+Both services live on **Vercel** as separate projects from this same repo:
+the **backend** (FastAPI, as a Python serverless function) and the
+**frontend** (a static Vite build). Chat history persists to **Turso**, a
+hosted SQLite-compatible database, since a serverless function has no local
+disk to keep a `chat.db` file on between requests.
+
+Everything below is genuinely free, no card required anywhere.
 
 Total time: ~15 minutes. You'll need:
 - A [Groq API key](https://console.groq.com/keys) (free) - powers Chat,
   Resume, Roadmap, and Mock Interview.
-- Accounts on [render.com](https://render.com) and [vercel.com](https://vercel.com)
-  (both support signing in with GitHub).
+- A [Turso](https://turso.tech) database (free, no card) - chat history.
+- Accounts on [vercel.com](https://vercel.com) (supports signing in with
+  GitHub).
 
-## Why two hosts, and what's ephemeral
+## Why this shape
 
-- The backend can't be a static site or a serverless function the way the
-  frontend can - it streams chat responses over SSE and needs a
-  long-running process.
-- Chat history is a local SQLite file (`backend/app/chat.db`) by default.
-  Most free-tier hosts (Render's included) wipe local disk on every
-  redeploy/restart, so **chat history won't persist across deploys unless
-  you attach a paid persistent disk** (see step 4). Fine for trying this
-  out; something to know before you rely on it.
+- Vercel's Python runtime runs a FastAPI app as a serverless ASGI function -
+  no separate always-on server to pay for or keep warm.
+- That function is stateless between invocations, so chat history can't
+  live in a local SQLite file the way `backend/app/db.py` originally did.
+  Turso keeps the exact same schema/queries, just reachable over HTTP
+  instead of a local file - see `app/db.py` for the full explanation.
 - Code execution (Technical Interview's Run/Submit) calls the public
   Judge0 API (`https://ce.judge0.com`) - no setup or key needed, and
   nothing to deploy for it. It's a shared public service, so expect
@@ -35,79 +38,76 @@ If you haven't already:
 git push origin main
 ```
 
-Both Render and Vercel deploy by connecting to this repo, so it needs to
-be on GitHub first.
+Vercel deploys by connecting to this repo, so it needs to be on GitHub
+first.
 
-## 2. Deploy the backend (Render)
+## 2. Create a Turso database
 
-1. On [render.com](https://render.com), **New +** → **Blueprint**.
-2. Connect this GitHub repo. Render will look for a `render.yaml` - point
-   the blueprint's root at the `placement-ai` directory (this repo has
-   the app nested one level down, not at the repo root).
-3. Render reads `placement-ai/backend/render.yaml` and proposes one web
-   service, `placementai-backend`. Confirm.
-4. Before the first deploy finishes, open the service's **Environment**
-   tab and set:
+1. On [turso.tech](https://turso.tech), sign in and **Create Database**.
+   Pick whichever region is closest to you.
+2. On the database's page, copy the **Database URL** - it looks like
+   `libsql://your-db-your-org.turso.io`. You'll paste it into Vercel in a
+   moment, but change the scheme to `https://` first (not `libsql://`) -
+   the `libsql://` scheme makes the client try a WebSocket connection,
+   which doesn't complete inside Vercel's serverless environment.
+3. Click **Create Token** (Read & Write, never expires is fine) and copy
+   the token shown - **it's only shown once**, so copy it now before
+   closing the dialog.
+
+## 3. Deploy the backend (Vercel)
+
+1. On [vercel.com/new](https://vercel.com/new), import this GitHub repo.
+2. Set **Root Directory** to `placement-ai/backend`. Vercel auto-detects
+   the "FastAPI" application preset from there - no build command changes
+   needed, and no `vercel.json` required (one was tried and removed; it
+   broke path routing by rewriting every request to a literal path instead
+   of preserving it - Vercel's own framework detection handles this
+   correctly on its own).
+3. Under **Environment Variables**, add:
    - `GROQ_API_KEY` - your key from console.groq.com.
+   - `TURSO_DATABASE_URL` - the `https://...turso.io` URL from step 2.
+   - `TURSO_AUTH_TOKEN` - the token from step 2.
    - `CORS_ORIGINS` - leave as `http://localhost:5173` for now; you'll
-     update this in step 4 once the frontend has a real URL.
-5. Deploy. Once it's live, note the URL Render gives you - something like
-   `https://placementai-backend.onrender.com`. Confirm it's up:
+     update this in step 5 once the frontend has a real URL.
+4. Deploy. Note the URL Vercel gives you, e.g.
+   `https://placementai-backend.vercel.app`. Confirm it's up:
    ```bash
-   curl https://placementai-backend.onrender.com/health
+   curl https://placementai-backend.vercel.app/health
    ```
    should return `{"status":"ok"}`.
 
-   Render's free tier spins a service down after inactivity - the first
-   request after a quiet period can take 30-60s to wake it back up. That's
-   normal, not a bug.
+## 4. Deploy the frontend (Vercel)
 
-## 3. Deploy the frontend (Vercel)
-
-1. On [vercel.com](https://vercel.com), **Add New** → **Project**, import
-   this same GitHub repo.
-2. Vercel will ask for the project's **Root Directory** - set it to
-   `placement-ai/frontend`. It auto-detects Vite from there; no build
-   command changes needed.
+1. Back on [vercel.com/new](https://vercel.com/new), import the **same**
+   GitHub repo again as a second, separate project.
+2. Set **Root Directory** to `placement-ai/frontend`. Vercel auto-detects
+   Vite from there.
 3. Under **Environment Variables**, add:
-   - `VITE_API_BASE_URL` = the Render backend URL from step 2 (e.g.
-     `https://placementai-backend.onrender.com`, no trailing slash).
+   - `VITE_API_BASE_URL` = the backend URL from step 3 (e.g.
+     `https://placementai-backend.vercel.app`, no trailing slash).
 
    This gets baked into the build at build time (it's a Vite env var, not
    read at runtime) - if you change it later, you need to redeploy.
 4. Deploy. Note the URL Vercel gives you, e.g.
-   `https://placementai.vercel.app`.
+   `https://placementai-frontend.vercel.app`.
 
-## 4. Close the loop: point the backend's CORS at the real frontend URL
+## 5. Close the loop: point the backend's CORS at the real frontend URL
 
-Back on Render, open the backend service's **Environment** tab again and
-update `CORS_ORIGINS` to the Vercel URL from step 3:
+Back on the backend project's **Environment Variables** settings, edit
+`CORS_ORIGINS` to include the frontend URL from step 4:
 
 ```
-CORS_ORIGINS=https://placementai.vercel.app
+CORS_ORIGINS=https://placementai-frontend.vercel.app,http://localhost:5173
 ```
 
-(Comma-separate multiple origins if you also want e.g. a preview-deploy
-domain allowed.) Save - Render redeploys automatically. Once that's done,
-open the Vercel URL and confirm Chat/Resume/Roadmap/Technical
-Interview/Mock Interview all work end to end.
+(Comma-separated - keeping `localhost:5173` alongside the real URL means
+local frontend dev can keep hitting the deployed backend too.) Save, then
+redeploy the backend from its Deployments tab (env var changes don't
+auto-redeploy). Once that's done, open the frontend URL and confirm
+Chat/Resume/Roadmap/Technical Interview/Mock Interview all work end to end.
 
 ## Updating a live deploy
 
-Both platforms auto-redeploy on every push to `main` by default - just
-`git push` as usual. No extra steps for typical code changes; only
-`render.yaml` and env var changes need the manual dashboard steps above.
-
-## Optional: persistent chat history
-
-By default `chat.db` resets on every backend redeploy. To keep it:
-
-1. Upgrade the Render service off the free tier (persistent disks aren't
-   available on it).
-2. In `backend/render.yaml`, uncomment the `disk:` block and the `DB_DIR`
-   env var, then redeploy (push the change, or click "Sync" from a
-   Blueprint update in the Render dashboard).
-
-`DB_DIR` defaults to sitting next to the app code if unset - the uncommented
-disk config points it at a separate mounted directory instead, so the
-disk mount doesn't shadow the app's own source files.
+Both projects auto-redeploy on every push to `main` - just `git push` as
+usual. Only env var changes need the manual dashboard + redeploy steps
+above; code changes need nothing extra.

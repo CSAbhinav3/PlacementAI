@@ -23,7 +23,7 @@ placement-ai/
 cd backend
 python -m venv .venv && .venv\Scripts\activate
 pip install -r requirements.txt
-copy .env.example .env   # then set ANTHROPIC_API_KEY inside
+copy .env.example .env   # then set GROQ_API_KEY, TURSO_DATABASE_URL, TURSO_AUTH_TOKEN inside
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -47,5 +47,5 @@ and watch the response stream in.
 
 ## Deploying
 
-See [`DEPLOY.md`](./DEPLOY.md) for hosting this on Render (backend) +
-Vercel (frontend).
+See [`DEPLOY.md`](./DEPLOY.md) for hosting both backend and frontend on
+Vercel, with chat history persisted to Turso.

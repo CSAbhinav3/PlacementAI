@@ -16,8 +16,11 @@ copy .env.example .env        # Windows
 # cp .env.example .env        # macOS/Linux
 ```
 
-Edit `.env` and set `ANTHROPIC_API_KEY` to your key from
-https://console.anthropic.com/.
+Edit `.env` and set `GROQ_API_KEY` to your key from
+https://console.groq.com/keys, plus `TURSO_DATABASE_URL` and
+`TURSO_AUTH_TOKEN` from a free database at https://turso.tech - chat
+history is persisted there, not to a local SQLite file. See
+`.env.example` for the full list.
 
 ## Run
 
