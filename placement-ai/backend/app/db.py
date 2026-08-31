@@ -38,9 +38,15 @@ def _now() -> str:
 def _get_client() -> libsql_client.Client:
     global _client
     if _client is None:
+        # .strip() guards against a stray trailing newline sneaking into
+        # either value via copy-paste into a platform's env var UI - a
+        # newline in the auth token in particular gets embedded in the
+        # Authorization header and aiohttp rejects it outright as a
+        # potential header-injection attempt, which is a confusing way to
+        # discover a whitespace problem.
         _client = libsql_client.create_client(
-            url=os.environ["TURSO_DATABASE_URL"],
-            auth_token=os.environ["TURSO_AUTH_TOKEN"],
+            url=os.environ["TURSO_DATABASE_URL"].strip(),
+            auth_token=os.environ["TURSO_AUTH_TOKEN"].strip(),
         )
     return _client
 
