@@ -25,7 +25,10 @@ from app.routers import execute, interview, problems, roadmap, resume
 
 MAX_TOKENS = 4096
 
-db.init_db()
+# db.init_db() used to run here at import time, but it's async now (see
+# app/db.py) - each db function lazily ensures the schema exists on first
+# use instead, since there's no sync place left to call it from a plain
+# module-level statement.
 
 app = FastAPI(title="PlacementAI backend")
 
@@ -66,8 +69,8 @@ async def stream_chat_response(session_id: str, user_message: str) -> AsyncItera
     # Persist the user turn immediately, then re-read the full history from
     # the DB - it's the single source of truth for what goes to the API,
     # rather than juggling a separately-maintained in-memory copy.
-    db.add_message(session_id, "user", user_message)
-    history = db.get_history_for_api(session_id)
+    await db.add_message(session_id, "user", user_message)
+    history = await db.get_history_for_api(session_id)
 
     # OpenAI-compatible chat completions have no separate top-level `system`
     # param like Anthropic - it's just the first message in the list.
@@ -96,7 +99,7 @@ async def stream_chat_response(session_id: str, user_message: str) -> AsyncItera
         # Only persist the reply once streaming succeeded - an error below
         # leaves the user turn saved without a reply, which is fine to
         # retry, but avoids saving a broken assistant turn.
-        db.add_message(session_id, "assistant", "".join(reply_chunks))
+        await db.add_message(session_id, "assistant", "".join(reply_chunks))
 
     except openai.APIStatusError as e:
         yield sse_event("error", {"message": f"Groq API error: {e.message}"})
@@ -112,24 +115,24 @@ async def health() -> dict:
 @app.get("/sessions")
 async def sessions_list() -> list[dict]:
     """All sessions, newest first - for the sidebar."""
-    return db.list_sessions()
+    return await db.list_sessions()
 
 
 @app.get("/sessions/{session_id}")
 async def session_detail(session_id: str) -> dict:
     """Full message history for one session, for loading into the chat view."""
-    session = db.get_session(session_id)
+    session = await db.get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
-    return {**session, "messages": db.get_history_for_api(session_id)}
+    return {**session, "messages": await db.get_history_for_api(session_id)}
 
 
 @app.post("/chat")
 async def chat(request: ChatRequest) -> StreamingResponse:
     session_id = request.session_id
-    if not session_id or not db.session_exists(session_id):
+    if not session_id or not await db.session_exists(session_id):
         session_id = str(uuid.uuid4())
-        db.create_session(session_id, request.message)
+        await db.create_session(session_id, request.message)
 
     return StreamingResponse(
         stream_chat_response(session_id, request.message),
