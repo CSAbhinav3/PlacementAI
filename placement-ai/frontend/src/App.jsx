@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, MotionConfig } from "framer-motion";
 import {
   ChatIcon,
   ChevronLeftIcon,
@@ -61,10 +62,24 @@ function AppShell() {
                 onClick={() => setPage(key)}
                 title={railCollapsed ? label : undefined}
               >
-                <span
-                  className={`beacon beacon--accent rail-nav-dot${isActive ? "" : " rail-nav-dot--hidden"}`}
-                  aria-hidden="true"
-                />
+                {isActive ? (
+                  // layoutId is the whole trick: framer-motion snapshots this
+                  // element's position before/after the render that moves it
+                  // to a different nav item and animates the delta (a FLIP
+                  // shared-layout transition), rather than the dot just
+                  // vanishing from one item and reappearing in another.
+                  <motion.span
+                    layoutId="rail-active-beacon"
+                    className="beacon beacon--accent rail-nav-dot"
+                    aria-hidden="true"
+                    transition={{ type: "spring", stiffness: 500, damping: 32 }}
+                  />
+                ) : (
+                  // Inactive items keep a non-animated, invisible dot in the
+                  // same spot so the label doesn't shift when the real one
+                  // moves away - same box, just not the shared element.
+                  <span className="beacon beacon--accent rail-nav-dot rail-nav-dot--hidden" aria-hidden="true" />
+                )}
                 <Icon className="rail-nav-icon" width={18} height={18} />
                 <span className="rail-nav-label">{label}</span>
               </button>
@@ -109,8 +124,14 @@ function AppShell() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AppShell />
-    </ThemeProvider>
+    // "user" mode makes every framer-motion animation in the app respect
+    // prefers-reduced-motion automatically (transitions collapse to instant
+    // if the OS setting is on) - one place to opt every motion.* component
+    // into that instead of threading a check through each one.
+    <MotionConfig reducedMotion="user">
+      <ThemeProvider>
+        <AppShell />
+      </ThemeProvider>
+    </MotionConfig>
   );
 }

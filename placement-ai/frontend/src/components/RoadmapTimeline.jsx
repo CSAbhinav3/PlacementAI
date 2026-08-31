@@ -1,5 +1,11 @@
 import { useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { GripIcon } from "./NavIcons";
+
+// Initial-render entrance only, deliberately not re-keyed on reorder - a
+// dragged phase card just moves, it doesn't replay the fade+slide-in (that
+// would read as content re-appearing, not a reorder).
+const PHASE_STAGGER_SECONDS = 0.1;
 
 // Checked state is purely visual progress tracking - it lives in this
 // component's state only and is never sent anywhere or persisted. Re-running
@@ -82,15 +88,38 @@ export default function RoadmapTimeline({ roadmapData, onEditForm }) {
             ]
               .filter(Boolean)
               .join(" ");
+            const isLast = position === order.length - 1;
             return (
-              <li
+              <motion.li
                 className={`roadmap-phase${stateClass ? ` ${stateClass}` : ""}`}
                 key={`${phase.phase_title}-${phaseIndex}`}
                 onDragEnter={() => handleDragEnter(position)}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => handleDrop(position)}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: position * PHASE_STAGGER_SECONDS, ease: "easeOut" }}
               >
-                <span className="roadmap-phase-marker" aria-hidden="true" />
+                <span className="roadmap-phase-marker beacon beacon--accent" aria-hidden="true" />
+                {!isLast && (
+                  // The connector "draws" downward from the marker after the
+                  // phase itself has faded in, rather than the line just
+                  // being there instantly - transformOrigin: top is what
+                  // makes scaleY read as growing down instead of from the
+                  // middle.
+                  <motion.span
+                    className="roadmap-phase-line"
+                    aria-hidden="true"
+                    style={{ transformOrigin: "top" }}
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: 1 }}
+                    transition={{
+                      duration: 0.35,
+                      delay: position * PHASE_STAGGER_SECONDS + 0.2,
+                      ease: "easeOut",
+                    }}
+                  />
+                )}
                 <div className="roadmap-phase-card">
                   <div className="roadmap-phase-header">
                     <h2>
@@ -131,7 +160,7 @@ export default function RoadmapTimeline({ roadmapData, onEditForm }) {
                     </ul>
                   )}
                 </div>
-              </li>
+              </motion.li>
             );
           })}
         </ol>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import Editor from "@monaco-editor/react";
 import { runCode, submitCode } from "../api/execute";
 import { getProblem, listProblems } from "../api/problems";
@@ -309,12 +310,30 @@ export default function TechnicalInterview() {
               {submitError && <p className="resume-status resume-status-error">⚠️ {submitError}</p>}
 
               {submitResult && (
-                <div className={`interview-verdict ${verdictClass(submitResult.verdict)}`}>
-                  <span className="interview-verdict-label">{submitResult.verdict}</span>
+                // No AnimatePresence/key needed for the entrance to replay on
+                // each submit - handleSubmit sets submitResult back to null
+                // before the new result arrives, so this genuinely unmounts
+                // and remounts every time rather than just updating in place.
+                <motion.div
+                  className={`interview-verdict ${verdictClass(submitResult.verdict)}`}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                >
+                  <span className="interview-verdict-label">
+                    <motion.span
+                      className="interview-verdict-dot"
+                      aria-hidden="true"
+                      initial={{ scale: 0.6 }}
+                      animate={{ scale: [0.6, 1.6, 1] }}
+                      transition={{ duration: 0.5, delay: 0.15, times: [0, 0.6, 1], ease: "easeOut" }}
+                    />
+                    {submitResult.verdict}
+                  </span>
                   <span className="interview-verdict-count">
                     {submitResult.passed_count} / {submitResult.total_count} passed
                   </span>
-                </div>
+                </motion.div>
               )}
             </div>
           </>

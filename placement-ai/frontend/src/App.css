@@ -27,6 +27,19 @@ button,
     transform 0.08s ease;
 }
 
+/* border-color is harmless to set on elements with `border: none` (there's
+   nothing to color), so this can apply broadly without a visual regression
+   on borderless buttons - it only actually shows up where a border already
+   exists and isn't already overridden by a more specific hover rule below. */
+button:not(:disabled):hover,
+.rail-nav-item:hover,
+.rail-footer-button:hover,
+.sidebar-session:hover,
+.interview-problem-item:hover {
+  border-color: var(--accent);
+  transform: scale(1.015);
+}
+
 button:not(:disabled):active {
   transform: scale(0.97);
 }
@@ -34,6 +47,20 @@ button:not(:disabled):active {
 .sidebar-session:active,
 .interview-problem-item:active {
   transform: scale(0.99);
+}
+
+/* Animated focus ring: a box-shadow ring rather than relying on the base
+   :focus-visible outline (index.css) alone - box-shadow is what the
+   transition above already animates, so the ring grows in instead of
+   snapping into view. The outline stays too, as a non-animated baseline
+   that doesn't depend on this rule matching. */
+button:focus-visible,
+.rail-nav-item:focus-visible,
+.rail-footer-button:focus-visible,
+.sidebar-session:focus-visible,
+.interview-problem-item:focus-visible,
+.roadmap-milestone label:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .rail {
@@ -961,23 +988,21 @@ button:not(:disabled):active {
   padding-bottom: 0;
 }
 
-/* The connecting line is drawn per-phase, from this phase's marker down
-   through its own padding-bottom gap to the next phase's marker. Since each
-   segment is sized to its own <li>, the line stays continuous and correctly
-   aligned regardless of how tall any individual phase card is - a roadmap
-   with 3 phases and one with 6 phases both work without extra math. */
-.roadmap-phase::before {
-  content: "";
+/* The connecting line is a real element (RoadmapTimeline.jsx), not a ::before
+   pseudo-element, so framer-motion can animate it drawing in - drawn per-
+   phase, from this phase's marker down through its own padding-bottom gap to
+   the next phase's marker. Since each segment is sized to its own <li>, the
+   line stays continuous and correctly aligned regardless of how tall any
+   individual phase card is - a roadmap with 3 phases and one with 6 phases
+   both work without extra math. Not rendered at all for the last phase (see
+   the component), rather than a :last-child selector suppressing it here. */
+.roadmap-phase-line {
   position: absolute;
   left: calc(0.25rem - 1px);
   top: 0;
   bottom: -2rem;
   width: 2px;
   background: var(--border);
-}
-
-.roadmap-phase:last-child::before {
-  content: none;
 }
 
 /* The timeline marker is a beacon - same 8px square + glow as everywhere
@@ -1493,8 +1518,11 @@ button:not(:disabled):active {
   color: var(--text);
 }
 
-.interview-verdict-label::before {
-  content: "";
+/* A real element rather than the ::before pseudo-element the difficulty
+   badges use - framer-motion (see TechnicalInterview.jsx) animates real DOM
+   nodes only, and this one needs its own one-shot reveal pulse. */
+.interview-verdict-dot {
+  display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 2px;
@@ -1511,7 +1539,7 @@ button:not(:disabled):active {
   border-color: color-mix(in srgb, var(--success) 40%, var(--border));
 }
 
-.interview-verdict-accepted .interview-verdict-label::before {
+.interview-verdict-accepted .interview-verdict-dot {
   background: var(--success);
   box-shadow: 0 0 8px 1px color-mix(in srgb, var(--success) 55%, transparent);
 }
@@ -1520,7 +1548,7 @@ button:not(:disabled):active {
   border-color: color-mix(in srgb, var(--danger) 40%, var(--border));
 }
 
-.interview-verdict-wrong-answer .interview-verdict-label::before {
+.interview-verdict-wrong-answer .interview-verdict-dot {
   background: var(--danger);
   box-shadow: 0 0 8px 1px color-mix(in srgb, var(--danger) 55%, transparent);
 }
@@ -1529,7 +1557,7 @@ button:not(:disabled):active {
   border-color: color-mix(in srgb, var(--accent-warm) 40%, var(--border));
 }
 
-.interview-verdict-runtime-error .interview-verdict-label::before {
+.interview-verdict-runtime-error .interview-verdict-dot {
   background: var(--accent-warm);
   box-shadow: 0 0 8px 1px color-mix(in srgb, var(--accent-warm) 55%, transparent);
 }
