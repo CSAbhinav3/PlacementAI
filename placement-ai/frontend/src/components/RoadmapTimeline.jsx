@@ -1,6 +1,16 @@
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
+// html2canvas-pro (not plain html2canvas) - the app's CSS uses color-mix()
+// for box-shadows/borders, which Chrome resolves to a `color(srgb ...)`
+// function at computed-style time. Plain html2canvas doesn't parse that
+// function and throws; the -pro fork does.
+import html2canvas from "html2canvas-pro";
 import { GripIcon } from "./NavIcons";
+
+function fileNameFor(targetRole) {
+  const cleaned = (targetRole || "Roadmap").trim().replace(/\s+/g, "_").replace(/[^\w-]/g, "");
+  return `${cleaned || "Roadmap"}_Roadmap.jpg`;
+}
 
 // Initial-render entrance only, deliberately not re-keyed on reorder - a
 // dragged phase card just moves, it doesn't replay the fade+slide-in (that
@@ -24,7 +34,9 @@ export default function RoadmapTimeline({ roadmapData, onEditForm }) {
   const [order, setOrder] = useState(() => phases.map((_, i) => i));
   const [dragIndex, setDragIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
+  const [downloading, setDownloading] = useState(false);
   const dragFromRef = useRef(null);
+  const timelineRef = useRef(null);
 
   function toggleMilestone(phaseIndex, milestoneIndex) {
     setChecked((prev) => {
@@ -65,15 +77,58 @@ export default function RoadmapTimeline({ roadmapData, onEditForm }) {
     setDragOverIndex(null);
   }
 
+  async function handleDownloadJpg() {
+    if (!timelineRef.current || downloading) return;
+    setDownloading(true);
+    try {
+      const node = timelineRef.current;
+      // Same over-capture-then-pin trick as the resume PDF export - render
+      // against the node's own size so nothing gets clipped against the
+      // browser viewport width.
+      const width = node.scrollWidth + 2;
+      const height = node.scrollHeight + 2;
+      // The header text (role + duration) has no background of its own -
+      // it's styled to sit on the page's <html> background (dark by
+      // default, light in light mode), so the export needs to use that same
+      // color rather than a hardcoded white, or that text renders unreadably
+      // faint against it.
+      const pageBackground = getComputedStyle(document.documentElement).backgroundColor;
+      const canvas = await html2canvas(node, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: pageBackground,
+        width,
+        height,
+        windowWidth: width,
+        windowHeight: height,
+      });
+      const link = document.createElement("a");
+      link.href = canvas.toDataURL("image/jpeg", 0.95);
+      link.download = fileNameFor(targetRole);
+      link.click();
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   return (
     <div className="resume-page">
       <div className="roadmap-toolbar">
         <button type="button" className="add-button" onClick={onEditForm}>
           ← Edit form
         </button>
+        <button
+          type="button"
+          className={`resume-download-button${downloading ? " btn-loading" : ""}`}
+          onClick={handleDownloadJpg}
+          disabled={downloading}
+          aria-busy={downloading}
+        >
+          Download JPG
+        </button>
       </div>
 
-      <div className="roadmap-timeline-wrapper">
+      <div className="roadmap-timeline-wrapper" ref={timelineRef}>
         <header className="roadmap-timeline-header">
           <h1>{targetRole}</h1>
           <p className="roadmap-timeline-duration">{totalDuration}</p>
